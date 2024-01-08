@@ -148,6 +148,18 @@
             android:key="checkbox_only_show_L3R3"
             android:summary="@string/summary_only_l3r3"
             android:title="@string/title_only_l3r3" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="checkbox_show_onscreen_controls"
+            android:key="checkbox_show_onscreen_keys"
+            android:summary="Show keyboard buttons instead of controller buttons."
+            android:title="Virtual Keyboard Keys" />
+        <com.limelight.preferences.KeyboardButtonsPreference
+            android:defaultValue=""
+            android:dependency="checkbox_show_onscreen_keys"
+            android:key="list_onscreen_keys"
+            android:summary="The buttons to show."
+            android:title="Select Keys" />
         <com.limelight.preferences.SeekBarPreference
             android:key="seekbar_osc_opacity"
             android:dependency="checkbox_show_onscreen_controls"

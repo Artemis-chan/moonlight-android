@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 
 import com.limelight.nvstream.input.ControllerPacket;
 import com.limelight.preferences.PreferenceConfiguration;
@@ -117,7 +118,15 @@ public class VirtualControllerConfigurationLoader {
 
         return button;
     }
-
+    
+    private static DigitalButton createKeyboardButton(
+            final short keyCode,
+            final int layer,
+            final VirtualController controller,
+            final Context context) {
+        return new KeyboardButton(controller, layer, context, keyCode);
+    }
+    
     private static DigitalButton createLeftTrigger(
             final int layer,
             final String text,
@@ -185,6 +194,20 @@ public class VirtualControllerConfigurationLoader {
     private static final int START_BACK_WIDTH = 12;
     private static final int START_BACK_HEIGHT = 7;
 
+    private static short[] KEYBOARD_BUTTONS = {
+            KeyEvent.KEYCODE_A,
+            KeyEvent.KEYCODE_S,
+            KeyEvent.KEYCODE_Z,
+            KeyEvent.KEYCODE_X,
+            KeyEvent.KEYCODE_ENTER,
+            KeyEvent.KEYCODE_CTRL_LEFT,
+            KeyEvent.KEYCODE_SHIFT_LEFT,
+            KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_DPAD_UP,
+            KeyEvent.KEYCODE_DPAD_DOWN,
+    };
+
     public static void createDefaultLayout(final VirtualController controller, final Context context) {
 
         DisplayMetrics screen = context.getResources().getDisplayMetrics();
@@ -198,7 +221,26 @@ public class VirtualControllerConfigurationLoader {
         // NOTE: Some of these getPercent() expressions seem like they can be combined
         // into a single call. Due to floating point rounding, this isn't actually possible.
 
-        if (!config.onlyL3R3)
+        if(config.keyboardButtonsForController)
+        {
+            int btnSize = screenScale(BUTTON_SIZE, height);
+            int yCnt = (int)(height/btnSize);
+            byte[] buttons = config.activeKeyboardButtons;
+            for (int i = 0; i < buttons.length; i++) {
+                short keycode = buttons[i];
+
+                int y = i % yCnt;
+                int x = i / yCnt;
+
+                controller.addElement(createKeyboardButton(keycode, 1, controller, context),
+                        screenScale(BUTTON_BASE_X, height) + rightDisplacement + x * btnSize,
+                        screenScale(BUTTON_BASE_Y, height) + y * btnSize,
+                        btnSize,
+                        btnSize
+                );
+            }
+        }
+        else if (!config.onlyL3R3)
         {
             controller.addElement(createDigitalPad(controller, context),
                     screenScale(DPAD_BASE_X, height),
@@ -341,7 +383,7 @@ public class VirtualControllerConfigurationLoader {
         SharedPreferences.Editor prefEditor = context.getSharedPreferences(OSC_PREFERENCE, Activity.MODE_PRIVATE).edit();
 
         for (VirtualControllerElement element : controller.getElements()) {
-            String prefKey = ""+element.elementId;
+            String prefKey = element.getPrefKey();
             try {
                 prefEditor.putString(prefKey, element.getConfiguration().toString());
             } catch (JSONException e) {
@@ -356,7 +398,7 @@ public class VirtualControllerConfigurationLoader {
         SharedPreferences pref = context.getSharedPreferences(OSC_PREFERENCE, Activity.MODE_PRIVATE);
 
         for (VirtualControllerElement element : controller.getElements()) {
-            String prefKey = ""+element.elementId;
+            String prefKey = element.getPrefKey();
 
             String jsonConfig = pref.getString(prefKey, null);
             if (jsonConfig != null) {

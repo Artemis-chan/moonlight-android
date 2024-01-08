@@ -319,6 +319,10 @@ public abstract class VirtualControllerElement extends View {
         return getWidth() > getHeight() ? getHeight() : getWidth();
     }
 
+    public String getPrefKey()
+    {
+        return "" + elementId;
+    }
 
     public JSONObject getConfiguration() throws JSONException {
         JSONObject configuration = new JSONObject();

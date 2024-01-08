@@ -133,6 +133,11 @@ public class DigitalButton extends VirtualControllerElement {
         invalidate();
     }
 
+    public void setTimerLongClickTimeout(int ms) {
+        this.timerLongClickTimeout = ms;
+        invalidate();
+    }
+
     @Override
     protected void onElementDraw(Canvas canvas) {
         // set transparent background
